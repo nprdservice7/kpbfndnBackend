@@ -2,10 +2,47 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ApiConfigService } from './config/api-config.service';
 import { DocumentBuilder, SwaggerCustomOptions, SwaggerModule } from '@nestjs/swagger';
+import { BadRequestException, ValidationPipe } from '@nestjs/common';
+import { ResponseTransformInterceptor } from './interceptors/response.transform.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  const getConstraintMessage = (obj: any) => {
+    if (obj.constraints) {
+      return Object.values(obj.constraints)[0];
+    } else if (obj.children && obj.children.length > 0) {
+      return getConstraintMessage(obj.children[0]);
+    } else {
+      return 'Nested Validation error';
+    }
+  };
+
   app.setGlobalPrefix('api');
+
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true, 
+      forbidNonWhitelisted: true, 
+      exceptionFactory: (errors) => {
+        console.log(JSON.stringify(errors))
+        const result = errors.map((error) => {
+          const msg =
+            error.children?.length > 0
+              ? getConstraintMessage(error.children[0])
+              : Object.values(error.constraints)[0];
+          return {
+            property: error.property,
+            message: msg,
+          };
+        });
+        return new BadRequestException(result);
+      },
+      stopAtFirstError: true,
+    }),
+  );
+
+  app.useGlobalInterceptors(new ResponseTransformInterceptor());
   app.enableCors();
   const apiConfigService = app.get(ApiConfigService)
 
