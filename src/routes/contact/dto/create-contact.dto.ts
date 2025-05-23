@@ -19,6 +19,7 @@ export class CreateContactDto {
         required : true
     })
     @IsString()
+    @IsNotEmpty()
     last_name : string;
 
 
