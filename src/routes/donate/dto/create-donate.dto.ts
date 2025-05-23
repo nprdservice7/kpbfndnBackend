@@ -28,17 +28,16 @@ export class CreateDonateDto {
         example : 'Doe',
         description : "Last Name is Required",
         type : String,
-        required : true
+        required : false
     })
     @IsString()
-    @IsNotEmpty()
     last_name : string;
 
         @ApiProperty({
             example : 'test@example.com',
             description : "Enter Email Here",
             type : String,
-            required : true
+            required : false
         })
         @IsString()
         @IsEmail()
@@ -56,7 +55,8 @@ export class CreateDonateDto {
         example : 'http://cloudinary.com/test.png',
         description : "Enter the proof of payment here",
         type : String,
-        required : true,
+        required : false,
     })
+    @IsString()
     image : string;
 }

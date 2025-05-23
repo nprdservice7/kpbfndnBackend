@@ -46,6 +46,26 @@ export class EnvironmentVariables {
   @IsNumber()
   @IsNotEmpty()
   FILE_SIZE_LIMIT: number;
+
+  @IsString()
+  @IsNotEmpty()
+  EMAIL_USER : string;
+
+  @IsString()
+  @IsNotEmpty()
+  EMAIL_PASSWORD : string;
+
+  @IsString()
+  @IsNotEmpty()
+  EMAIL_FROM : string;
+
+  @IsString()
+  @IsNotEmpty()
+  EMAIL_SERVICE : string;
+
+  @IsString()
+  @IsNotEmpty()
+  ADMIN_EMAIL : string;
 }
 
 export function validate(config: Record<string, unknown>) {

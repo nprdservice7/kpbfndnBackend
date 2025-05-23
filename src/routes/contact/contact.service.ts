@@ -1,13 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import { CreateContactDto } from './dto/create-contact.dto';
 import { UpdateContactDto } from './dto/update-contact.dto';
-import { errorMessage } from 'src/utils/response';
+import { errorMessage, successMessage } from 'src/utils/response';
+import { MailerService } from '@nestjs-modules/mailer';
+import { ApiConfigService } from 'src/config/api-config.service';
+import { MailService } from 'src/email/mail.service';
 
 @Injectable()
 export class ContactService {
-  // constructor(
-  //   private readonly emailService
-  // ){}
+  constructor(
+    private readonly mailerService : MailService, 
+
+    private readonly configService : ApiConfigService
+  ){}
   async create(createContactDto: CreateContactDto) {
     const {
       first_name,
@@ -26,21 +31,17 @@ export class ContactService {
     if(!email) {
       return errorMessage("Email is required",'email');
     }
-  }
+    try {
+      const adminEmail = this.configService.getValue('ADMIN_EMAIL');
+      const sendMailOptions = {
+        adminEmail, ...createContactDto
+      }
+      this.mailerService.sendMail(sendMailOptions)
+      return { success : true,message : "Message has been sent to admin successfully"}
 
-  findAll() {
-    return `This action returns all contact`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} contact`;
-  }
-
-  update(id: number, updateContactDto: UpdateContactDto) {
-    return `This action updates a #${id} contact`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} contact`;
+    } catch (err) {
+      console.error('Error sending email:', err);
+      return errorMessage("Failed to send email", 'email')
+    }
   }
 }
